@@ -1,3 +1,42 @@
+## Код для таблиц
+```
+CREATE TABLE vacancy (
+vacancy_id INT PRIMARY KEY,
+name VARCHAR,
+work_schedule VARCHAR,
+disabled BOOLEAN,
+area_id INT,
+creation_time VARCHAR,
+archived BOOLEAN
+);
+
+CREATE TABLE resume (
+resume_id INT PRIMARY KEY,
+disabled BOOLEAN,
+is_finished INT,
+area_id INT,
+compensation INT,
+currency VARCHAR,
+position VARCHAR,
+birth_day TIMESTAMP,
+role_id_list array
+);
+
+CREATE TABLE area (
+area_id INT PRIMARY KEY,
+area_name VARCHAR,
+region_name VARCHAR,
+country_name VARCHAR
+);
+
+CREATE TABLE currency (
+code INT PRIMARY KEY,
+rate DECIMAL
+);
+
+```
+
+
 ### 1.Выгрузить число созданных вакансий (в динамике по месяцам), опубликованных в России, в названии которых встречается слово «водитель», предлагающих «Гибкий график» работы, за 2020-2021 годы.Важно, чтобы вакансии на момент сбора данных не были удаленными / заблокированными.
 
 ```SQL
