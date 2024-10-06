@@ -1,40 +1,76 @@
 ## Код для таблиц
 ```
 CREATE TABLE vacancy (
-vacancy_id INT PRIMARY KEY,
-name VARCHAR,
-work_schedule VARCHAR,
-disabled BOOLEAN,
-area_id INT,
-creation_time VARCHAR,
-archived BOOLEAN
+       vacancy_id INT PRIMARY KEY,
+       name VARCHAR,
+       work_schedule VARCHAR,
+       disabled BOOLEAN,
+       area_id INT,
+       creation_time VARCHAR,
+       archived BOOLEAN
 );
 
 CREATE TABLE resume (
-resume_id INT PRIMARY KEY,
-disabled BOOLEAN,
-is_finished INT,
-area_id INT,
-compensation INT,
-currency VARCHAR,
-position VARCHAR,
-birth_day TIMESTAMP,
-role_id_list array
+       resume_id INT PRIMARY KEY,
+       disabled BOOLEAN,
+       is_finished INT,
+       area_id INT,
+       compensation INT,
+       currency VARCHAR,
+       position VARCHAR,
+       birth_day TIMESTAMP,
+       role_id_list array
 );
 
 CREATE TABLE area (
-area_id INT PRIMARY KEY,
-area_name VARCHAR,
-region_name VARCHAR,
-country_name VARCHAR
+       area_id INT PRIMARY KEY,
+       area_name VARCHAR,
+       region_name VARCHAR,
+       country_name VARCHAR
 );
 
 CREATE TABLE currency (
-code INT PRIMARY KEY,
-rate DECIMAL
+       code INT PRIMARY KEY,
+       rate DECIMAL
 );
 
-```
+INSERT INTO currency (code, rate) VALUES
+(1, 1),
+(2, 95.5),
+(3, 104.5);
+
+INSERT INTO area(area_id, area_name, region_name, country_name) VALUES
+(), --- country_name = 'Россия' 'Беларусь' 'Казахстан'
+---   area_name Москва Санкт-Петербург Аламата Минск Самара Владивосток Норильск Екатеринбург
+--- region_name in 'Московская область' 'Ленинградская область' 'Свердловская область' 'Самарская область' 'Приморский край' 'Минская область' 'Алматинская область' 'Красноярский край'
+
+INSERT INTO resume (
+       resume_id,
+       disabled,  --- TRUE/FALSE
+       is_finished, --- 1,2,3 need more 1 
+       area_id, --- 1-6
+       compensation, --- 30k - 500k
+       currency, --- 1, 2, 3 code from currency
+       position, --- должность . хз
+       birth_day, --- от 17 лет до 66
+       role_id_list --- хз что это - дропнуть нахуй
+) VALUES
+(),
+
+INSERT INTO vacancy (
+       vacancy_id, 
+       name, --- водитель. чот ещё
+       work_schedule, --- 'гибкий график'. удалёнка гибрид
+       disabled BOOLEAN, --- FALSE/TRUE
+       area_id INT,
+       creation_time, --- 2020 2021 2022 2023
+       archived --- FALSE/TRUE 
+);
+
+;
+
+
+ ```
 
 
 ### 1.Выгрузить число созданных вакансий (в динамике по месяцам), опубликованных в России, в названии которых встречается слово «водитель», предлагающих «Гибкий график» работы, за 2020-2021 годы.Важно, чтобы вакансии на момент сбора данных не были удаленными / заблокированными.
