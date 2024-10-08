@@ -193,8 +193,6 @@ GROUP BY 1, 2
 
 
 ```SQL
---- всего 9 вакансий, 2 не в РФ, 5 в мск (0.55), 4 в спб (0.45)
---- при группировке по egion_name, значения почему то окрглюятся, надо разобраться(!)
 SELECT DISTINCT a.region_name, 
 	ROUND(COUNT(*) OVER(PARTITION BY a.region_name)::decimal / COUNT(*) OVER(), 3) as share_online_work
 FROM vacancy v
@@ -204,7 +202,6 @@ WHERE disabled = FALSE
       AND archived = FALSE
       AND country_name = 'Россия'
       AND (creation_time LIKE '%2021%' OR creation_time LIKE '%2022%')
-
 ```
 
 
