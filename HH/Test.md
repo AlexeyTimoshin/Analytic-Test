@@ -216,41 +216,51 @@ WHERE disabled = FALSE
 
 ```SQL
 WITH filter_resume AS (
-	SELECT resume_id, area_id, compensation, currency,  
-              (EXTRACT(YEAR FROM NOW()) - DATE_PART('year', birth_day)) as age
+	SELECT 	resume_id, area_id, compensation, currency,  
+               (EXTRACT(YEAR FROM NOW()) - DATE_PART('year', birth_day)) as age
   	FROM resume 
   	WHERE '91' = ANY(role_id_list)  
-  	  AND birth_day IS NOT NULL
-      	  AND disabled = FALSE 
-     	  AND is_finished = 3
+  	      AND birth_day IS NOT NULL
+      	      AND disabled = FALSE 
+     	      AND is_finished = 3
 ), filter_area as (
+  
 	SELECT area_id, area_name
   	FROM area 
   	WHERE area_name IN ('Москва', 'Санкт-Петербург')
+),
+fin_tab AS (
+SELECT f_a.area_name,
+	           CASE
+               WHEN age <= 17 THEN '17 лет и младше'
+               WHEN 17 <  age AND age <= 24 THEN '17-24'
+               WHEN 25 <= age AND age <= 34 THEN '25-34'
+               WHEN 35 <= age AND age <= 44 THEN '35-44'
+               WHEN 45 <= age AND age <= 54 THEN '45-54' 
+               ELSE '55 и старше'
+               END AS "Возрастная группа",
+  	       f_r.compensation * c.rate as compensation_rub
+FROM filter_resume f_r
+JOIN filter_area as f_a ON f_r.area_id = f_a.area_id
+JOIN currency AS c ON f_r.currency = c.code
 )
 
-SELECT area_name,
-       "Возрастная группа", 
+SELECT fin_tab.area_name,
+       fin_tab."Возрастная группа", 
+       "Доля с указанной зп",
        percentile_disc(0.10) within group (ORDER BY compensation_rub) as "10_percentile",
        percentile_disc(0.25) within group (ORDER BY compensation_rub) as "25_percentile",
        percentile_disc(0.50) within group (ORDER BY compensation_rub) as "50_percentile",
        percentile_disc(0.75) within group (ORDER BY compensation_rub) as "75_percentile",
        percentile_disc(0.90) within group (ORDER BY compensation_rub) as "90_percentile"
-FROM
-       (SELECT f_a.area_name,
-       		CASE
-       		WHEN age <= 17 THEN '17 лет и младше'
-       		WHEN 17 <  age AND age <= 24 THEN '17-24'
-       		WHEN 25 <= age AND age <= 34 THEN '25-34'
-       		WHEN 35 <= age AND age <= 44 THEN '35-44'
-       		WHEN 45 <= age AND age <= 54 THEN '45-54' 
-       		ELSE '55 и старше'
-       		END AS "Возрастная группа",
-		f_r.compensation * c.rate as compensation_rub ---  rate некорректный в ориг.файле 
-	FROm filter_resume f_r
-	JOIN filter_area as f_a ON f_r.area_id = f_a.area_id
-	JOIN currency AS c ON f_r.currency = c.code
-) prep_tab
-GROUP BY 1, 2
+FROM fin_tab 
+JOIN (
+  	SELECT area_name, "Возрастная группа",
+  	    (COUNT(*) FILTER(WHERE compensation_rub IS NOT NULL) OVER(PARTITION BY area_name, "Возрастная группа"))::decimal / 
+    	    COUNT(*) OVER(PARTITION BY area_name, "Возрастная группа") as "Доля с указанной зп"
+    	FROM fin_tab
+  	GROUP BY 1, 2, compensation_rub
+) fin2 ON fin_tab.area_name = fin2.area_name AND fin_tab."Возрастная группа" = fin2."Возрастная группа"
+GROUP BY 1, 2, 3
 ORDER BY 1 
 ```
