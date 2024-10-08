@@ -19,7 +19,7 @@ CREATE TABLE resume (
        currency VARCHAR,
        position VARCHAR,
        birth_day TIMESTAMP,
-       role_id_list array
+       role_id_list int[]
 );
 
 CREATE TABLE area (
@@ -47,7 +47,7 @@ INSERT INTO area(area_id, area_name, region_name, country_name) VALUES
 (3, 'Норильск', 'Красноярский край', 'Россия'),            
 (4, 'Самара', 'Самарская область', 'Россия'),
 (5, 'Екатеринбург', 'Свердловская область', 'Россия'),                     
-(6, 'Владивосток', 'Приморский край' 'Россия'),
+(6, 'Владивосток', 'Приморский край', 'Россия'),
 (7, 'Минск', 'Минская область', 'Беларусь'),
 (8, 'Аламата', 'Алматинская область', 'Казахстан');
 
@@ -63,7 +63,7 @@ INSERT INTO resume (
        birth_day, 
        role_id_list 
 ) VALUES
-(1, FALSE, 3, 1, 30000, 'RUR', NULL, '2008-01-01', '{91, 42}');
+(1, FALSE, 3, 1, 30000, 'RUR', NULL, '2008-01-01', '{91, 42}'),
 (2, FALSE, 3, 1, 25000, 'RUR', NULL, '2010-02-01', '{91, 2}'),
 (3, FALSE, 3, 2, 10000, 'RUR', NULL, '2012-01-01', '{91}'),
 (4, FALSE, 3, 2, 8000, 'EUR', NULL, '1980-01-01', '{91}'),
@@ -205,7 +205,7 @@ WITH filter_resume AS (
 )
 
 SELECT area_name,
-	"Возрастная группа", 
+       "Возрастная группа", 
        percentile_disc(0.10) within group (ORDER BY compensation_rub) as "10_percentile",
        percentile_disc(0.25) within group (ORDER BY compensation_rub) as "25_percentile",
        percentile_disc(0.50) within group (ORDER BY compensation_rub) as "50_percentile",
@@ -213,21 +213,19 @@ SELECT area_name,
        percentile_disc(0.90) within group (ORDER BY compensation_rub) as "90_percentile"
 FROM
        (SELECT f_a.area_name,
-	CASE
-       WHEN age <= 17 THEN '17 лет и младше'
-       WHEN 17 <  age AND age <= 24 THEN '17-24'
-       WHEN 25 <= age AND age <= 34 THEN '25-34'
-	WHEN 25 <= age AND age <= 34 THEN '25-34'
-       WHEN 35 <= age AND age <= 44 THEN '35-44'
-       WHEN 45 <= age AND age <= 54 THEN '45-54' 
-       ELSE '55 и старше'
-       END AS "Возрастная группа",
-	f_r.compensation * c.rate as compensation_rub ---  rate некорректный в ориг.файле 
-FROm filter_resume f_r
-JOIN filter_area as f_a ON f_r.area_id = f_a.area_id
-JOIN currency AS c ON f_r.currency = c.code
+       		CASE
+       		WHEN age <= 17 THEN '17 лет и младше'
+       		WHEN 17 <  age AND age <= 24 THEN '17-24'
+       		WHEN 25 <= age AND age <= 34 THEN '25-34'
+       		WHEN 35 <= age AND age <= 44 THEN '35-44'
+       		WHEN 45 <= age AND age <= 54 THEN '45-54' 
+       		ELSE '55 и старше'
+       		END AS "Возрастная группа",
+		f_r.compensation * c.rate as compensation_rub ---  rate некорректный в ориг.файле 
+	FROm filter_resume f_r
+	JOIN filter_area as f_a ON f_r.area_id = f_a.area_id
+	JOIN currency AS c ON f_r.currency = c.code
 ) prep_tab
 GROUP BY 1, 2
 ORDER BY 1 
-
 ```
