@@ -213,21 +213,18 @@ WHERE disabled = FALSE
 
 ```SQL
 WITH filter_resume AS (
-	SELECT 	resume_id, area_id, compensation, currency,  
-               (EXTRACT(YEAR FROM NOW()) - DATE_PART('year', birth_day)) as age
-  	FROM resume 
+	SELECT 	resume_id, r.area_id, a.area_name, compensation, currency,  
+                (EXTRACT(YEAR FROM NOW()) - DATE_PART('year', birth_day)) as age
+  	FROM resume r
+  	JOIN area as a ON r.area_id = a.area_id
   	WHERE '91' = ANY(role_id_list)  
-  	      AND birth_day IS NOT NULL
-      	      AND disabled = FALSE 
-     	      AND is_finished = 3
-), filter_area as (
-  
-	SELECT area_id, area_name
-  	FROM area 
-  	WHERE area_name IN ('Москва', 'Санкт-Петербург')
+  	  AND birth_day IS NOT NULL
+      	  AND disabled = FALSE 
+     	  AND is_finished = 3
+	  AND area_name IN ('Москва', 'Санкт-Петербург')
 ),
 fin_tab AS (
-SELECT f_a.area_name,
+SELECT f_r.area_name,
 	           CASE
                WHEN age <= 17 THEN '17 лет и младше'
                WHEN 17 <  age AND age <= 24 THEN '17-24'
@@ -236,9 +233,8 @@ SELECT f_a.area_name,
                WHEN 45 <= age AND age <= 54 THEN '45-54' 
                ELSE '55 и старше'
                END AS "Возрастная группа",
-  	       f_r.compensation * c.rate as compensation_rub
+	       f_r.compensation * c.rate as compensation_rub
 FROM filter_resume f_r
-JOIN filter_area as f_a ON f_r.area_id = f_a.area_id
 JOIN currency AS c ON f_r.currency = c.code
 )
 
@@ -252,12 +248,16 @@ SELECT fin_tab.area_name,
        percentile_disc(0.90) within group (ORDER BY compensation_rub) as "90_percentile"
 FROM fin_tab 
 JOIN (
-  	SELECT area_name, "Возрастная группа",
+  	SELECT area_name, "Возрастная группа", 
+  		ROUND(
   	    (COUNT(*) FILTER(WHERE compensation_rub IS NOT NULL) OVER(PARTITION BY area_name, "Возрастная группа"))::decimal / 
-    	    COUNT(*) OVER(PARTITION BY area_name, "Возрастная группа") as "Доля с указанной зп"
+    	    COUNT(*) OVER(PARTITION BY area_name, "Возрастная группа"), 
+          3) as "Доля с указанной зп"
     	FROM fin_tab
-  	GROUP BY 1, 2, compensation_rub
+  	GROUP BY 
+  		area_name, "Возрастная группа", compensation_rub
 ) fin2 ON fin_tab.area_name = fin2.area_name AND fin_tab."Возрастная группа" = fin2."Возрастная группа"
-GROUP BY 1, 2, 3
+GROUP BY 
+	fin_tab.area_name, fin_tab."Возрастная группа", "Доля с указанной зп"
 ORDER BY 1 
 ```
