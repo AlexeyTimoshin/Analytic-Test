@@ -1,3 +1,14 @@
+### Описание решения
+#### LEVEL 1
+[Ссылка на дашик (Зажмите Ctrl чтобы открыть в новой вкладке)](https://datalens.yandex.cloud/rppib79swm5md?_theme=dark&_no_controls=1)
+
+
+#### LEVEL 2
+[Ссылка на SQL запросы](https://github.com/AlexeyTimoshin/Analytic-Test/blob/main/DataHeroes/Level%202.md)
+
+#### LEVEL 3
+[Небольшой анализв датасета в Pandas](https://github.com/AlexeyTimoshin/Analytic-Test/blob/main/DataHeroes/DataHeroesTZ.ipynb)
+
 ### Описание тестового
 
 Описание данных
